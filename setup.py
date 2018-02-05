@@ -15,6 +15,7 @@ setup(
     url='https://github.com/dmonroy/docker-services',
     author='Darwin Monroy',
     author_email='contact@darwinmonroy.com',
+    setup_requires=['setuptools_scm'],
     install_requires=[
         'docker',
         'pytest'

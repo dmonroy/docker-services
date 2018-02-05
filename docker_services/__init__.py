@@ -22,23 +22,41 @@ def _random_string(length=10):
 def parse_service(service):
     """Extracts name and image from service definition.
 
-    >>> parse_service('postgres')
-    {'name': 'postgres', 'image': 'postgres'}
+    >>> s = parse_service('postgres')
+    >>> s['name']
+    'postgres'
+    >>> s['image']
+    'postgres'
 
-    >>> parse_service('db=postgres')
-    {'name': 'db', 'image': 'postgres'}
+    >>> s = parse_service('db=postgres')
+    >>> s['name']
+    'db'
+    >>> s['image']
+    'postgres'
 
-    >>> parse_service('db=postgres:10')
-    {'name': 'db', 'image': 'postgres:10'}
+    >>> s = parse_service('db=postgres:10')
+    >>> s['name']
+    'db'
+    >>> s['image']
+    'postgres:10'
 
-    >>> parse_service('db=my.registry.com/custom/postgres:10')
-    {'name': 'db', 'image': 'my.registry.com/custom/postgres:10'}
+    >>> s = parse_service('db=my.registry.com/custom/postgres:10')
+    >>> s['name']
+    'db'
+    >>> s['image']
+    'my.registry.com/custom/postgres:10'
 
-    >>> parse_service('my/image')
-    {'name': 'my_image', 'image': 'my/image'}
+    >>> s = parse_service('my/image')
+    >>> s['name']
+    'my_image'
+    >>> s['image']
+    'my/image'
 
-    >>> parse_service('my/image:alpha')
-    {'name': 'my_image', 'image': 'my/image:alpha'}
+    >>> s = parse_service('my/image:alpha')
+    >>> s['name']
+    'my_image'
+    >>> s['image']
+    'my/image:alpha'
 
     >>> parse_service('my.registry.com/custom/postgres:10')
     Traceback (most recent call last):
@@ -76,7 +94,6 @@ def parse_service(service):
 
 def generate_container_name(service_name):
     """
-
     >>> name = generate_container_name('my_service')
     >>> parts = name.split('.')
     >>> parts[0]

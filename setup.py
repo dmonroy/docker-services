@@ -1,10 +1,20 @@
 # sample ./setup.py file
+import os
 from setuptools import setup, find_packages
+
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name="docker-services",
     packages=find_packages(),
     use_scm_version=True,
+    description='Uses docker to spawn containers for services required during tests',
+    long_description=long_description,
+    url='https://github.com/dmonroy/docker-services',
+    author='Darwin Monroy',
+    author_email='contact@darwinmonroy.com',
     install_requires=[
         'docker',
         'pytest'

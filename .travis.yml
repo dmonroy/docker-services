@@ -1,4 +1,6 @@
 language: python
+
+# all python versions
 python:
   - "2.6"
   - "2.7"
@@ -9,8 +11,11 @@ python:
   - "3.7-dev"  # 3.7 development branch
   - "nightly"
 
+# prepare environment
 install:
   - pip install -e .
 
+
+# The test command(s)
 script:
   - pytest

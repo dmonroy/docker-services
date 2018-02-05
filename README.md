@@ -1,5 +1,7 @@
 Uses docker to spawn containers for services required during tests
 
+[![Build Status](https://travis-ci.org/dmonroy/docker-services.svg?branch=master)](https://travis-ci.org/dmonroy/docker-services)
+
 # Install
 
 This project is available on pypi, so you can use _pip_ to install it:

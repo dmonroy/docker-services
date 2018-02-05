@@ -6,7 +6,8 @@ setup(
     packages=find_packages(),
     use_scm_version=True,
     install_requires=[
-        'docker'
+        'docker',
+        'pytest'
     ],
     entry_points={
         'pytest11': [

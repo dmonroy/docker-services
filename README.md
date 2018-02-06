@@ -66,7 +66,7 @@ docker_services=
 
 Now service name is `db` and image name id `postgres:10`.
 
-If you don't want (or need) to set a specific image name, just ignore the version part like this:
+If you don't want (or need) to set a specific image version, just ignore the version part like this:
 
 ```
 [pytest]
@@ -79,7 +79,7 @@ Also you are able to use images from a private registry:
 ```
 [pytest]
 docker_services=
-    db: my.registry.com/custom/postgres
+    db=my.registry.com/custom/postgres
 ```
 
 ## 2. Run tests with docker-services enabled

@@ -16,4 +16,4 @@ install:
 
 # The test command(s)
 script:
-  - pytest
+  - pytest -vv

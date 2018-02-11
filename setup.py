@@ -18,7 +18,8 @@ setup(
     setup_requires=['setuptools_scm'],
     install_requires=[
         'docker',
-        'pytest'
+        'pytest',
+        'pyyaml'
     ],
     entry_points={
         'pytest11': [

@@ -14,10 +14,14 @@ python:
   - "3.7-dev"  # 3.7 development branch
   - "nightly"
 
+matrix:
+  allow_failures:
+  - python: nightly
+  - python: 3.7-dev
+
 # prepare environment
 install:
   - pip install -e .
-
 
 # The test command(s)
 script:

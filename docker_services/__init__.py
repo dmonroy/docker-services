@@ -91,34 +91,6 @@ def parse_services(config_yaml):
         _['name']: _ for _ in _parse()
     }
 
-
-def parse_service(service):
-
-    service = service.strip()
-
-    to_dict = lambda x, y: {'name': x, 'image': y}
-
-    if '=' in service:
-        service_dict = to_dict(*service.split('=', 1))
-    elif ':' in service:
-        service_dict = to_dict(service.split(':', 1)[0], service)
-    else:
-        service_dict = to_dict(service, service)
-
-    if '/' in service_dict['name'] or ':' in service_dict['name']:
-        service_dict['name'] = \
-            service_dict['name'].replace('/', '_').split(':', 1)[0]
-
-    if not re.match(r'^[\w_]*$', service_dict['name']):
-        raise Exception(
-            'Service name not allowed: {service_dict[name]}'.format(
-                **locals()
-            )
-        )
-
-    return service_dict
-
-
 def generate_container_name(service_name):
     """
     >>> name = generate_container_name('my_service')

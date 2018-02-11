@@ -19,7 +19,9 @@ Or include it as a dependency on `setup.py` or a `requirements.txt` file, whatev
 
 You need to start listing all services that your project depends on and leverage on _docker-services_ to maintain the lifecycle of those services during test runs.
 
-This must happen using the `docker_services` config option on any pytest _.cfg_ or _.ini_ file, the value for that option requires a yaml structure where top level members are the service names and their values can be either an empty value, image name or a or an object.
+This must happen using either the `docker_services` config option on any pytest _.cfg/.ini_ file or on a `.services.yaml` file, the value for that option requires a yaml structure where top level members are the service names and their values can be either an empty value, image name or a or an object.
+
+Due to limitations of ini files, full support for yaml is not available on .cfg/.ini files, if you need complex config then usage of the `.services.yaml` file is encouraged.
 
 This is a basic example for a project that depends on a `postgres` service:
 
@@ -44,23 +46,19 @@ docker_services=
     postgres: postgres
 ```
 
-And this too:
+And this too (on .services.yaml):
 
-```
-[pytest]
-docker_services=
-    postgres:
-        image: postgres
+```yaml
+postgres:
+    image: postgres
 ```
 
 And guess what?... this too!
 
-```
-[pytest]
-docker_services=
-    database:
-        name: postgres
-        image: postgres
+```yaml
+database:
+    name: postgres
+    image: postgres
 ```
 
 If the projects depends different services, list all of them:
@@ -82,11 +80,9 @@ docker_services=
 
 Also this way:
 
-```
-[pytest]
-docker_services=
-    postgres:
-        image: postgres:10
+```yaml
+postgres:
+    image: postgres:10
 ```
 
 Now the service name is `postgres` and image name is `postgres:10`.
@@ -99,11 +95,9 @@ docker_services=
     db: postgres:10
 ```
 
-```
-[pytest]
-docker_services=
-    db:
-        image: postgres:10
+```yaml
+db:
+    image: postgres:10
 ```
 
 Now service name is `db` and image name is `postgres:10`.
@@ -126,17 +120,15 @@ docker_services=
 
 ### 1.1. Configure environment variables for your services
 
-You may want to customize the behaviour of your services by setting environment variables, it is also possible by adding to the config.
+You may want to customize the behaviour of your services by setting environment variables, it is also possible by adding to the config (valid only when using the `.services.yaml` file).
 
-```
-[pytest]
-docker_services=
-    db:
-        image: postgres:10
-        environment:
-            POSTGRES_USERNAME: myuser
-            POSTGRES_PASSWORD: $3cr3t
-            POSTGRES_DB: mydb
+```yaml
+db:
+    image: postgres:10
+    environment:
+        POSTGRES_USERNAME: myuser
+        POSTGRES_PASSWORD: $3cr3t
+        POSTGRES_DB: mydb
 ```
 
 Using that config above the _db_ service is now initialized with `POSTGRES_USERNAME`, `POSTGRES_PASSWORD` and `POSTGRES_DB` environment variables.
@@ -149,18 +141,16 @@ Are you planning to configure a `DATABASE_URL` environment variable based on ser
 
 Talking about the `DATABASE_URL` for postgres one usually expects something like `postgres://user:password@host:port/dbname`, and that can be achieved by replacing
 
-```
-[pytest]
-docker_services=
-    postgres:
-        image: postgres:10
-        environment:
-            POSTGRES_USERNAME: myuser
-            POSTGRES_PASSWORD: $3cr3t
-            POSTGRES_DB: mydb
-            _templates:
-                POSTGRES_PORT: "{env[POSTGRES_PORT_5432_TCP_PORT]}"
-                DATABASE_URL: "postgres://myuser:$s3cr3t@localhost:{env[POSTGRES_PORT_5432_TCP_PORT]}/mydb"
+```yaml
+postgres:
+    image: postgres:10
+    environment:
+        POSTGRES_USERNAME: myuser
+        POSTGRES_PASSWORD: $3cr3t
+        POSTGRES_DB: mydb
+        _templates:
+            POSTGRES_PORT: "{env[POSTGRES_PORT_5432_TCP_PORT]}"
+            DATABASE_URL: "postgres://myuser:$s3cr3t@localhost:{env[POSTGRES_PORT_5432_TCP_PORT]}/mydb"
 ```
 
 It is also possible to use environment variables defined for the service, so you don't repeat the same:

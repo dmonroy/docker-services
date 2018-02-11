@@ -1,4 +1,6 @@
-from docker_services import start_docker_services
+import atexit
+
+from docker_services import start_docker_services, stop_docker_services
 
 
 def pytest_addoption(parser):
@@ -18,6 +20,12 @@ def pytest_addoption(parser):
 def pytest_sessionstart(session):
 
     if session.config.getoption('use_docker_services', False):
-        start_docker_services(session)
+        services_config = session.config.getini('docker_services')
+
+        if services_config is None:
+            print('No services found, but `--use-docker-services` was specified')
+        else:
+            services = start_docker_services(services_config)
+            atexit.register(stop_docker_services, services)
     else:
         print('Not loading services')

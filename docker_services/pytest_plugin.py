@@ -1,5 +1,7 @@
 import atexit
 
+import os
+
 from docker_services import start_docker_services, stop_docker_services
 
 
@@ -17,10 +19,26 @@ def pytest_addoption(parser):
     )
 
 
+def config_from_file():
+    files = [
+        '.services.yaml',
+        '.services.yml',
+        'tests/.services.yaml',
+        'tests/.services.yml'
+    ]
+
+    for filename in files:
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                return f.read()
+
+
 def pytest_sessionstart(session):
 
     if session.config.getoption('use_docker_services', False):
-        services_config = session.config.getini('docker_services')
+        services_config = \
+            config_from_file() or \
+            session.config.getini('docker_services')
 
         if services_config is None:
             print('No services found, but `--use-docker-services` was specified')

@@ -56,10 +56,10 @@ def parse_services(config_yaml):
      ...
     AssertionError: Invalid characters in service name
 
-    >>> parse_service('my.registry.com/custom/postgres:10')
+    >>> parse_services('my.registry.com/custom/postgres:10:')
     Traceback (most recent call last):
      ...
-    Exception: Service name not allowed: my.registry.com_custom_postgres
+    AssertionError: Invalid characters in service name
 
 
     :param config_yaml: services configuration (yaml string)

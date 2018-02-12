@@ -145,6 +145,13 @@ def start_docker_services(services_config):
             container.reload()
             sleep(0.1)
 
+        if container.attrs.get('State', {}).get('Health', {}):
+            print('    waiting for healthy status')
+
+            while container.attrs['State']['Health']['Status'] != 'healthy':
+                container.reload()
+                sleep(0.1)
+
         service['container'] = container
 
         # Create environment variables for all exposed ports
@@ -163,7 +170,6 @@ def start_docker_services(services_config):
         # If service exposes variable templates, create environment
         # variables using the templates and existing env variables
         # created in previous steps
-
         for var_name, template in variable_templates.items():
             value = template.format(env=os.environ)
             os.environ[var_name] = value

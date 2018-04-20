@@ -166,7 +166,7 @@ The parameters on the template are replaced using python's `.format()` method an
 _docker-services_ adds the `--use-docker-services` command line option for _py.test_, when setting this option it enables service's spawning using docker, run it like this:
 
 ```
-py.test --use-docker-services
+py.test --docker-services
 ```
 
 ## 3. Communicate with the services

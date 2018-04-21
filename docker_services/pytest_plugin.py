@@ -33,12 +33,12 @@ def config_from_file():
                 return f.read()
 
 
-def pytest_sessionstart(session):
+def pytest_configure(config):
 
-    if session.config.getoption('use_docker_services', False):
+    if config.getoption('use_docker_services', False):
         services_config = \
             config_from_file() or \
-            session.config.getini('docker_services')
+            config.getini('docker_services')
 
         if services_config is None:
             print('No services found, but `--use-docker-services` was specified')

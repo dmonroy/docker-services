@@ -142,15 +142,15 @@ def start_docker_services(services_config):
         )
 
         while not container.status == 'running':
-            container.reload()
             sleep(0.1)
+            container.reload()
 
         if container.attrs.get('State', {}).get('Health', {}):
             print('    waiting for healthy status')
 
             while container.attrs['State']['Health']['Status'] != 'healthy':
-                container.reload()
                 sleep(0.1)
+                container.reload()
 
         service['container'] = container
 

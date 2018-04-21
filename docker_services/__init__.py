@@ -132,6 +132,13 @@ def start_docker_services(services_config):
 
         variable_templates = environment.get('_templates', {})
 
+        try:
+            image = client.images.get(service['image'])
+        except:
+            print('    pulling image', service['image'])
+            client.images.pull(service['image'])
+
+        print('    waking up service')
         container = client.containers.run(
             image=service['image'],
             name=generate_container_name(service['name']),
@@ -146,7 +153,7 @@ def start_docker_services(services_config):
             container.reload()
 
         if container.attrs.get('State', {}).get('Health', {}):
-            print('    waiting for healthy status')
+            print('      waiting for healthy status')
 
             while container.attrs['State']['Health']['Status'] != 'healthy':
                 sleep(0.1)

@@ -13,6 +13,13 @@ def pytest_addoption(parser):
         dest="use_docker_services",
         help="Spawns docker containers for specified services")
 
+    parser.addoption(
+        "--docker-services-keepalive",
+        action="store_true",
+        default=False,
+        dest="keepalive_docker_services",
+        help="Maintain service's containers running after tests execution")
+
     parser.addini(
         'docker_services',
         'lists all docker services required for the test suite'

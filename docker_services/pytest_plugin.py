@@ -13,6 +13,13 @@ def pytest_addoption(parser):
         dest="use_docker_services",
         help="Spawns docker containers for specified services")
 
+    parser.addoption(
+        "--verbose-docker-services",
+        action="store_true",
+        default=False,
+        dest="use_docker_services_verbose_mode",
+        help="Spawns docker containers for specified services")
+
     parser.addini(
         'docker_services',
         'lists all docker services required for the test suite'
@@ -34,8 +41,11 @@ def config_from_file():
 
 
 def pytest_configure(config):
+    docker_services = config.getoption('use_docker_services', False)
+    verbose_docker_services = \
+        config.getoption('use_docker_services_verbose_mode', False)
 
-    if config.getoption('use_docker_services', False):
+    if docker_services or verbose_docker_services:
         services_config = \
             config_from_file() or \
             config.getini('docker_services')
@@ -43,7 +53,9 @@ def pytest_configure(config):
         if services_config is None:
             print('No services found, but `--use-docker-services` was specified')
         else:
-            services = start_docker_services(services_config)
+            services = start_docker_services(
+                services_config, verbose=verbose_docker_services
+            )
             atexit.register(stop_docker_services, services)
     else:
         print('Not loading services')

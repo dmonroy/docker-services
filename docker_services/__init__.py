@@ -114,7 +114,7 @@ def stop_docker_services(services):
         service['container'].stop()
 
 
-def start_docker_services(services_config):
+def start_docker_services(services_config, verbose=False):
     services = parse_services(services_config)
 
     client = docker.from_env()

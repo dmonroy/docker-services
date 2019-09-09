@@ -1,6 +1,7 @@
 import atexit
 
 import os
+import pytest
 
 from docker_services import start_docker_services, stop_docker_service
 

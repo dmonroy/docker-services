@@ -2,7 +2,7 @@ import atexit
 
 import os
 
-from docker_services import parse_services, start_docker_services, stop_docker_services
+from docker_services import parse_services, start_docker_services, stop_docker_service
 
 
 def test_parse_services_normal():
@@ -122,10 +122,9 @@ def test_parse_services_with_variables_and_containers():
                     DATABASE_URL: "postgres://{env[POSTGRES_USERNAME]}:{env[POSTGRES_PASSWORD]}@localhost:{env[POSTGRES_PORT_5432_TCP_PORT]}/{env[POSTGRES_DB]}"
         redis: redis:latest
     '''
-    services = start_docker_services(config)
-
-    # Ensure services are removed at exit
-    atexit.register(stop_docker_services, services)
+    for service in start_docker_services(config):
+        # Ensure services are removed at exit
+        atexit.register(stop_docker_service, service)
 
     assert 'DATABASE_URL' in os.environ
     assert os.environ['POSTGRES_PORT'] == os.environ['POSTGRES_PORT_5432_TCP_PORT']

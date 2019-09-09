@@ -107,11 +107,9 @@ def generate_container_name(service_name):
     )
 
 
-def stop_docker_services(services):
-    print('Shutdown docker services:')
-    for service in services.values():
-        print(' ', service['name'], service['container'].name)
-        service['container'].stop()
+def stop_docker_service(service):
+    print('Terminating service {} {}'.format(service['name'], service['container'].name))
+    service['container'].stop()
 
 
 def start_docker_services(services_config):
@@ -181,5 +179,5 @@ def start_docker_services(services_config):
             value = template.format(env=os.environ)
             os.environ[var_name] = value
 
-    return services
+            yield service
 

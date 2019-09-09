@@ -12,6 +12,7 @@ setup(
     use_scm_version=True,
     description='Uses docker to spawn containers for services required during tests',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/dmonroy/docker-services',
     author='Darwin Monroy',
     author_email='contact@darwinmonroy.com',

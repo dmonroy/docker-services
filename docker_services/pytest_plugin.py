@@ -1,8 +1,9 @@
 import atexit
 
 import os
+import pytest
 
-from docker_services import start_docker_services, stop_docker_services
+from docker_services import start_docker_services, stop_docker_service
 
 
 def pytest_addoption(parser):
@@ -43,7 +44,7 @@ def pytest_configure(config):
         if services_config is None:
             print('No services found, but `--use-docker-services` was specified')
         else:
-            services = start_docker_services(services_config)
-            atexit.register(stop_docker_services, services)
+            for service in start_docker_services(services_config):
+                atexit.register(stop_docker_service, service)
     else:
         print('Not loading services')

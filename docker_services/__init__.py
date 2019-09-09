@@ -1,5 +1,6 @@
 import random
 import re
+import socket
 import string
 from time import sleep
 
@@ -107,11 +108,9 @@ def generate_container_name(service_name):
     )
 
 
-def stop_docker_services(services):
-    print('Shutdown docker services:')
-    for service in services.values():
-        print(' ', service['name'], service['container'].name)
-        service['container'].stop()
+def stop_docker_service(service):
+    print('Terminating service {} {}'.format(service['name'], service['container'].name))
+    service['container'].stop()
 
 
 def start_docker_services(services_config):
@@ -119,67 +118,102 @@ def start_docker_services(services_config):
 
     client = docker.from_env()
 
+    _on_hold = lambda x: {_['name'] for _ in x.values() if _.get('container', None) is None}
+    _running = lambda x: {_['name'] for _ in x.values() if _.get('container', None) is not None}
+
     print('Launching docker services:')
-    for service in services.values():
-        print(' ', service['name'], service['image'])
+    while _on_hold(services):
+        for service_name in _on_hold(services):
+            service = services[service_name]
+            print(' {} {}'.format(service['name'], service['image']))
+            requires = service.get('requires', [])
+            if requires:
+                for required_service in requires:
+                    if required_service not in services:
+                        raise KeyError(
+                            "Service '{}' doesn't exist.".format(required_service)
+                        )
 
-        environment = service.get('environment', {})
-        variables = {
-            vn: vv
-            for vn, vv in environment.items()
-            if vn != '_templates'
-        }
+                if any(_ in _on_hold(services) for _ in required_service):
+                    continue
 
-        variable_templates = environment.get('_templates', {})
+            environment = service.get('environment', {})
+            variables = {
+                vn: vv
+                for vn, vv in environment.items()
+                if vn != '_templates'
+            }
+            for required_service in requires:
+                variables.update(
+                    services[required_service]['compiled_env']
+                )
 
-        try:
-            image = client.images.get(service['image'])
-        except:
-            print('    pulling image', service['image'])
-            client.images.pull(service['image'])
 
-        print('    waking up service')
-        container = client.containers.run(
-            image=service['image'],
-            name=generate_container_name(service['name']),
-            auto_remove=True,
-            detach=True,
-            publish_all_ports=True,
-            environment=variables
-        )
+            variable_templates = environment.get('_templates', {})
 
-        while not container.status == 'running':
-            sleep(0.1)
-            container.reload()
+            try:
+                image = client.images.get(service['image'])
+            except:
+                print('    pulling image: {}'.format(service['image']))
+                client.images.pull(service['image'])
 
-        if container.attrs.get('State', {}).get('Health', {}):
-            print('      waiting for healthy status')
+            container = client.containers.run(
+                image=service['image'],
+                command=service.get('command', None),
+                working_dir=service.get('workdir', None),
+                name=generate_container_name(service['name']),
+                auto_remove=True,
+                detach=True,
+                publish_all_ports=True,
+                environment=variables
+            )
 
-            while container.attrs['State']['Health']['Status'] != 'healthy':
+            while not container.status == 'running':
                 sleep(0.1)
                 container.reload()
 
-        service['container'] = container
+            if container.attrs.get('State', {}).get('Health', {}):
+                print('      waiting for healthy status')
 
-        # Create environment variables for all exposed ports
-        ports = container.attrs['NetworkSettings']['Ports']
-        for port, hosts in ports.items():
-            number, protocol = port.split('/')
-            for host_port in hosts:
-                var_template = '{service[name]}_PORT_{number}_{protocol}_PORT'
-                var_name = var_template.format(**locals()).upper()
-                os.environ[var_name] = host_port['HostPort']
+                while container.attrs['State']['Health']['Status'] != 'healthy':
+                    sleep(0.1)
+                    container.reload()
 
-        # Also expose all variables defined on service's config
-        for var_name, var_value in variables.items():
-            os.environ[var_name] = var_value
+            service['container'] = container
 
-        # If service exposes variable templates, create environment
-        # variables using the templates and existing env variables
-        # created in previous steps
-        for var_name, template in variable_templates.items():
-            value = template.format(env=os.environ)
-            os.environ[var_name] = value
+            for _cmd in service.get('setup_commands', []):
+                print(_cmd)
+                _cmd_result = container.exec_run(_cmd)
+                print(_cmd_result.output)
 
-    return services
+            # Create environment variables for all exposed ports
+            ports = container.attrs['NetworkSettings']['Ports']
+            hostname = os.getenv('DOCKER_SERVICES_HOST') or socket.getfqdn()
+            service['compiled_env'] = {}
+            for port, hosts in ports.items():
+                number, protocol = port.split('/')
+                for host_port in hosts:
+                    port_var_template = '{service[name]}_PORT_{number}_{protocol}_PORT'
+                    addr_var_template = '{service[name]}_PORT_{number}_{protocol}_ADDR'
+                    port_var_name = port_var_template.format(**locals()).upper()
+                    os.environ[port_var_name] = host_port['HostPort']
+                    service['compiled_env'][port_var_name] = host_port['HostPort']
+                    addr_var_name = addr_var_template.format(**locals()).upper()
+                    os.environ[addr_var_name] = hostname
+                    service['compiled_env'][addr_var_name] = hostname
+
+            # Also expose all variables defined on service's config
+            for var_name, var_value in variables.items():
+                os.environ[var_name] = var_value
+                service['compiled_env'][var_name] = var_value
+
+            # If service exposes variable templates, create environment
+            # variables using the templates and existing env variables
+            # created in previous steps
+            for var_name, template in variable_templates.items():
+                value = template.format(env=os.environ)
+                os.environ[var_name] = value
+                service['compiled_env'][var_name] = value
+
+            yield service
 

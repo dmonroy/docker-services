@@ -112,6 +112,19 @@ def stop_docker_service(service):
     print('Terminating service {} {}'.format(service['name'], service['container'].name))
     service['container'].stop()
 
+# See https://stackoverflow.com/a/28950776
+def get_hostname():
+    """Platform-independent way to get the hostname of a machine."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
 
 def start_docker_services(services_config):
     services = parse_services(services_config)
@@ -188,7 +201,7 @@ def start_docker_services(services_config):
 
             # Create environment variables for all exposed ports
             ports = container.attrs['NetworkSettings']['Ports']
-            hostname = os.getenv('DOCKER_SERVICES_HOST') or socket.getfqdn()
+            hostname = os.getenv('DOCKER_SERVICES_HOST') or get_hostname()
             service['compiled_env'] = {}
             for port, hosts in ports.items():
                 number, protocol = port.split('/')

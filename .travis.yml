@@ -7,17 +7,15 @@ language: python
 
 # all python versions
 python:
-  - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7-dev"  # 3.7 development branch
+  - "3.7"
+  - "3.8"
   - "nightly"
 
 matrix:
   allow_failures:
   - python: nightly
-  - python: 3.7-dev
 
 # prepare environment
 install:

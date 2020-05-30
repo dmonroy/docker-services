@@ -149,7 +149,7 @@ def start_docker_services(services_config):
                             "Service '{}' doesn't exist.".format(required_service)
                         )
 
-                if any(_ in _on_hold(services) for _ in required_service):
+                if any(_ in _on_hold(services) for _ in requires):
                     continue
 
             environment = service.get('environment', {})
